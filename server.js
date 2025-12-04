@@ -24,7 +24,7 @@ const GROQ_MODEL = 'llama-3.3-70b-versatile';
 const USE_API = 'groq';
 
 if (GROQ_API_KEY === 'YOUR_GROQ_KEY_HERE') {
-    console.error('❌ ERROR: GROQ_API_KEY not set!');
+    console.error('ERROR: GROQ_API_KEY not set!');
     process.exit(1);
 }
 
@@ -80,7 +80,7 @@ app.post('/api/auth/register', (req, res) => {
         users.push(newUser);
         saveUsers(users);
 
-        console.log('✅ New user registered:', username);
+        console.log('New user registered:', username);
 
         res.json({ 
             success: true, 
@@ -156,7 +156,7 @@ app.post('/api/admin/verify', (req, res) => {
     user.verified = verified;
     saveUsers(users);
 
-    console.log(`✅ User ${user.username} ${verified ? 'verified' : 'unverified'}`);
+    console.log(`User ${user.username} ${verified ? 'verified' : 'unverified'}`);
 
     res.json({ success: true, user });
 });
@@ -179,7 +179,7 @@ app.post('/api/admin/delete', (req, res) => {
     users = users.filter(u => u.id !== userId);
     saveUsers(users);
 
-    console.log(`🗑️ User ${user.username} deleted`);
+    console.log(`User ${user.username} deleted`);
 
     res.json({ success: true });
 });
@@ -243,13 +243,13 @@ app.post('/api/generate', async (req, res) => {
             }
         }
 
-        console.log('📝 Generating response for:', username || 'anonymous');
+        console.log('Generating response for:', username || 'anonymous');
 
         const responseText = await callGroq(prompt);
 
         res.json({ text: responseText });
     } catch (error) {
-        console.error('❌ ERROR:', error.message);
+        console.error('ERROR:', error.message);
         res.status(500).json({ 
             error: 'Failed to generate response',
             details: error.message
@@ -279,17 +279,17 @@ module.exports = app;
 if (require.main === module && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log('');
-    console.log('🚀 ============================================');
-    console.log('🚀   GORK SERVER WITH AUTH IS RUNNING!');
-    console.log('🚀 ============================================');
-    console.log(`🚀   Local:   http://localhost:${PORT}/gork`);
-    console.log(`🚀   Admin:   http://localhost:${PORT}/gork/admin.html`);
-    console.log('🚀 ============================================');
-    console.log(`🔑   Admin Password: ${ADMIN_PASSWORD}`);
-    console.log('🔑   Change in server.js or set ADMIN_PASSWORD env var');
-    console.log('🚀 ============================================');
+    console.log(' ============================================');
+    console.log('   GORK SERVER WITH AUTH IS RUNNING!');
+    console.log(' ============================================');
+    console.log(`   Local:   http://localhost:${PORT}/gork`);
+    console.log(`   Admin:   http://localhost:${PORT}/gork/admin.html`);
+    console.log(' ============================================');
+    console.log(`   Admin Password: ${ADMIN_PASSWORD}`);
+    console.log('   Change in server.js or set ADMIN_PASSWORD env var');
+    console.log(' ============================================');
     console.log('');
   });
 } else {
-  console.log('🚀 Gork ready for Vercel deployment!');
+  console.log('Gork ready for Vercel deployment!');
 }
