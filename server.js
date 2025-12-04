@@ -24,13 +24,17 @@ const GROQ_MODEL = 'llama-3.3-70b-versatile';
 const USE_API = 'groq';
 
 if (GROQ_API_KEY === 'YOUR_GROQ_KEY_HERE') {
-    console.error('ERROR: GROQ_API_KEY not set!');
+    console.error('❌ ERROR: GROQ_API_KEY not set!');
     process.exit(1);
 }
 
+// Global middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
+
+// Create router for /gork subpath
+const gorkRouter = express.Router();
+gorkRouter.use(express.static('.')); // Serve static files (HTML, JS, etc.) under /gork
 
 // Helper functions
 function getUsers() {
@@ -52,7 +56,7 @@ function findUser(username) {
 // ============================================
 
 // Register new user
-app.post('/api/auth/register', (req, res) => {
+gorkRouter.post('/api/auth/register', (req, res) => {
     try {
         const { username } = req.body;
 
@@ -80,20 +84,20 @@ app.post('/api/auth/register', (req, res) => {
         users.push(newUser);
         saveUsers(users);
 
-        console.log('New user registered:', username);
+        console.log('✅ New user registered:', username);
 
         res.json({ 
             success: true, 
             user: newUser 
         });
     } catch (error) {
-        console.error('Register error:', error);
+        console.error('❌ Register error:', error);
         res.status(500).json({ error: 'Registration failed' });
     }
 });
 
 // Check if user is verified
-app.post('/api/auth/check', (req, res) => {
+gorkRouter.post('/api/auth/check', (req, res) => {
     try {
         const { username } = req.body;
         const user = findUser(username);
@@ -107,6 +111,7 @@ app.post('/api/auth/check', (req, res) => {
             username: user.username 
         });
     } catch (error) {
+        console.error('❌ Check failed:', error);
         res.status(500).json({ error: 'Check failed' });
     }
 });
@@ -116,7 +121,7 @@ app.post('/api/auth/check', (req, res) => {
 // ============================================
 
 // Admin login
-app.post('/api/admin/login', (req, res) => {
+gorkRouter.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     
     if (password === ADMIN_PASSWORD) {
@@ -127,7 +132,7 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // Get all users (admin only)
-app.post('/api/admin/users', (req, res) => {
+gorkRouter.post('/api/admin/users', (req, res) => {
     const { password } = req.body;
     
     if (password !== ADMIN_PASSWORD) {
@@ -139,7 +144,7 @@ app.post('/api/admin/users', (req, res) => {
 });
 
 // Verify user (admin only)
-app.post('/api/admin/verify', (req, res) => {
+gorkRouter.post('/api/admin/verify', (req, res) => {
     const { password, userId, verified } = req.body;
     
     if (password !== ADMIN_PASSWORD) {
@@ -156,13 +161,13 @@ app.post('/api/admin/verify', (req, res) => {
     user.verified = verified;
     saveUsers(users);
 
-    console.log(`User ${user.username} ${verified ? 'verified' : 'unverified'}`);
+    console.log(`✅ User ${user.username} ${verified ? 'verified' : 'unverified'}`);
 
     res.json({ success: true, user });
 });
 
 // Delete user (admin only)
-app.post('/api/admin/delete', (req, res) => {
+gorkRouter.post('/api/admin/delete', (req, res) => {
     const { password, userId } = req.body;
     
     if (password !== ADMIN_PASSWORD) {
@@ -179,7 +184,7 @@ app.post('/api/admin/delete', (req, res) => {
     users = users.filter(u => u.id !== userId);
     saveUsers(users);
 
-    console.log(`User ${user.username} deleted`);
+    console.log(`🗑️ User ${user.username} deleted`);
 
     res.json({ success: true });
 });
@@ -209,16 +214,16 @@ async function callGroq(prompt) {
         })
     });
 
-    const data = await response.json();
-    
-    if (data.error) {
-        throw new Error(data.error.message || JSON.stringify(data.error));
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error.message || JSON.stringify(errorData.error));
     }
 
+    const data = await response.json();
     return data.choices[0].message.content;
 }
 
-app.post('/api/generate', async (req, res) => {
+gorkRouter.post('/api/generate', async (req, res) => {
     try {
         const { prompt, username, mode } = req.body;
 
@@ -243,13 +248,13 @@ app.post('/api/generate', async (req, res) => {
             }
         }
 
-        console.log('Generating response for:', username || 'anonymous');
+        console.log('📝 Generating response for:', username || 'anonymous');
 
         const responseText = await callGroq(prompt);
 
         res.json({ text: responseText });
     } catch (error) {
-        console.error('ERROR:', error.message);
+        console.error('❌ ERROR:', error.message);
         res.status(500).json({ 
             error: 'Failed to generate response',
             details: error.message
@@ -257,19 +262,28 @@ app.post('/api/generate', async (req, res) => {
     }
 });
 
-app.get('/api/health', (req, res) => {
+gorkRouter.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Gork server with auth is running!' });
 });
 
-// ... (keep all your existing code up to the end of routes)
+// Mount the router at /gork
+app.use('/gork', gorkRouter);
 
 // Fallback for root /
 app.get('/', (req, res) => {
-  res.redirect('/gork');
+    res.redirect('/gork');
 });
 
-app.get('/gork', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+// Improved 404 handler (returns JSON for API-like requests)
+app.use((req, res, next) => {
+    console.error(`❌ 404: ${req.method} ${req.url}`);
+    res.status(404).json({ error: 'Route not found' });
+});
+
+// Global error handler for uncaught errors
+app.use((err, req, res, next) => {
+    console.error('❌ Unhandled error:', err);
+    res.status(500).json({ error: 'Internal server error' });
 });
 
 // Export app for Vercel serverless
@@ -277,19 +291,19 @@ module.exports = app;
 
 // Local dev only: Listen on port
 if (require.main === module && !process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log('');
-    console.log(' ============================================');
-    console.log('   GORK SERVER WITH AUTH IS RUNNING!');
-    console.log(' ============================================');
-    console.log(`   Local:   http://localhost:${PORT}/gork`);
-    console.log(`   Admin:   http://localhost:${PORT}/gork/admin.html`);
-    console.log(' ============================================');
-    console.log(`   Admin Password: ${ADMIN_PASSWORD}`);
-    console.log('   Change in server.js or set ADMIN_PASSWORD env var');
-    console.log(' ============================================');
-    console.log('');
-  });
+    app.listen(PORT, () => {
+        console.log('');
+        console.log('🚀 ============================================');
+        console.log('🚀   GORK SERVER WITH AUTH IS RUNNING!');
+        console.log('🚀 ============================================');
+        console.log(`🚀   Local:   http://localhost:${PORT}/gork`);
+        console.log(`🚀   Admin:   http://localhost:${PORT}/gork/admin.html`);
+        console.log('🚀 ============================================');
+        console.log(`🔑   Admin Password: ${ADMIN_PASSWORD}`);
+        console.log('🔑   Change in server.js or set ADMIN_PASSWORD env var');
+        console.log('🚀 ============================================');
+        console.log('');
+    });
 } else {
-  console.log('Gork ready for Vercel deployment!');
+    console.log('🚀 Gork ready for Vercel deployment!');
 }
