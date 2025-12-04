@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gork - Unhinged AI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d1a3d 100%);
+            padding: 20px;
+            border-bottom: 2px solid #6b21a8;
+            box-shadow: 0 4px 20px rgba(107, 33, 168, 0.3);
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            background: linear-gradient(135deg, #6b21a8, #ec4899);
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .logo-text h1 {
+            font-size: 28px;
+            background: linear-gradient(90deg, #ec4899, #6b21a8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text p {
+            font-size: 11px;
+            color: #888;
+        }
+
+        .mode-selector {
+            position: relative;
+        }
+
+        .current-mode {
+            background: #6b21a8;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .current-mode:hover {
+            background: #7c3aed;
+            transform: scale(1.05);
+        }
+
+        .mode-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 10px;
+            background: #1a1a1a;
+            border: 2px solid #6b21a8;
+            border-radius: 12px;
+            padding: 10px;
+            min-width: 250px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+        }
+
+        .mode-dropdown.active {
+            display: block;
+        }
+
+        .mode-option {
+            padding: 12px;
+            margin: 5px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .mode-option:hover {
+            background: #2d1a3d;
+            border-color: #6b21a8;
+        }
+
+        .mode-option.selected {
+            background: #6b21a8;
+        }
+
+        .mode-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .mode-desc {
+            font-size: 11px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .warning-badge {
+            display: inline-block;
+            background: #dc2626;
+            color: white;
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            font-weight: 700;
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .message {
+            margin: 20px 0;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.gork {
+            background: linear-gradient(135deg, #2d1a3d, #1a1a2e);
+            border: 2px solid #6b21a8;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(107, 33, 168, 0.2);
+        }
+
+        .message.user {
+            background: linear-gradient(135deg, #1a2a3d, #1a1a1a);
+            border: 2px solid #3b82f6;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.2);
+        }
+
+        .message.system {
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #fbbf24;
+            border-radius: 16px;
+            padding: 15px;
+            text-align: center;
+            font-size: 14px;
+            color: #fbbf24;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .message-icon {
+            font-size: 24px;
+        }
+
+        .message-name {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #666;
+            margin-left: auto;
+        }
+
+        .message-text {
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .input-container {
+            background: #1a1a1a;
+            border-top: 2px solid #6b21a8;
+            padding: 20px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+        }
+
+        .input-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            gap: 12px;
+        }
+
+        #userInput {
+            flex: 1;
+            background: #0a0a0a;
+            border: 2px solid #6b21a8;
+            border-radius: 12px;
+            padding: 16px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        #userInput:focus {
+            border-color: #ec4899;
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+        }
+
+        #sendBtn {
+            background: linear-gradient(135deg, #6b21a8, #ec4899);
+            border: none;
+            padding: 16px 32px;
+            border-radius: 12px;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+
+        #sendBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(236, 72, 153, 0.5);
+        }
+
+        #sendBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .typing {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .typing span {
+            width: 8px;
+            height: 8px;
+            background: #ec4899;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+
+        .typing span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #6b21a8;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7c3aed;
+        }
+
+        .warning-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .warning-content {
+            background: linear-gradient(135deg, #1a1a1a, #2d1a3d);
+            border: 3px solid #dc2626;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(220, 38, 38, 0.5);
+        }
+
+        .warning-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+            animation: warningPulse 1s infinite;
+        }
+
+        @keyframes warningPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .warning-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: #dc2626;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .warning-text {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            color: #ccc;
+        }
+
+        .warning-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .warning-btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .warning-btn.accept {
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+        }
+
+        .warning-btn.accept:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(220, 38, 38, 0.6);
+        }
+
+        .warning-btn.decline {
+            background: #374151;
+            color: white;
+        }
+
+        .warning-btn.decline:hover {
+            background: #4b5563;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="warningModal" class="warning-modal hidden">
+        <div class="warning-content">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-title">EXTREME CONTENT WARNING</div>
+            <div class="warning-text">
+                You are about to enter <strong id="warningModeName"></strong>.<br><br>
+                This mode contains <strong>EXPLICIT ADULT CONTENT</strong> including:<br>
+                • Graphic sexual content and descriptions<br>
+                • Profanity and offensive language<br>
+                • Dark and potentially disturbing humor<br>
+                • Content not suitable for minors<br><br>
+                By continuing, you confirm you are <strong>18+ years old</strong> and understand this content may be offensive.
+            </div>
+            <div class="warning-buttons">
+                <button class="warning-btn decline" onclick="cancelWarning()">❌ I'm Out</button>
+                <button class="warning-btn accept" onclick="acceptWarning()">✓ I Accept (18+)</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">👾</div>
+                <div class="logo-text">
+                    <h1>GORK</h1>
+                    <p>Unfiltered. Unhinged. Unstoppable.</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <div style="text-align: right;">
+                    <div style="font-size: 14px; color: #ec4899; font-weight: 600;" id="usernameDisplay"></div>
+                    <div style="font-size: 11px; color: #666;" id="verificationStatus"></div>
+                </div>
+                <div class="mode-selector">
+                <div class="current-mode" onclick="toggleModes()">
+                    <span id="currentModeText">🔥 Normal Mode</span>
+                </div>
+                <div class="mode-dropdown" id="modeDropdown">
+                    <div class="mode-option" onclick="setMode('normal')">
+                        <div class="mode-name">🔥 Normal Mode</div>
+                        <div class="mode-desc">Witty and clever, PG-13</div>
+                    </div>
+                    <div class="mode-option" onclick="setMode('profane')">
+                        <div class="mode-name">🤬 Profane Mode</div>
+                        <div class="mode-desc">Lots of f-bombs and curse words</div>
+                    </div>
+                    <div class="mode-option" onclick="trySetMode('sexual')">
+                        <div class="mode-name">🔞 Sexual Mode<span class="warning-badge">18+</span></div>
+                        <div class="mode-desc">Explicit sexual content and innuendos</div>
+                    </div>
+                    <div class="mode-option" onclick="trySetMode('extreme')">
+                        <div class="mode-name">💀 Extreme Mode<span class="warning-badge">18+</span></div>
+                        <div class="mode-desc">Graphic content, nothing is off limits</div>
+                    </div>
+                    <div class="mode-option" onclick="trySetMode('degenerate')">
+                        <div class="mode-name">😈 Degenerate Mode<span class="warning-badge">18+</span></div>
+                        <div class="mode-desc">Absolute moral bankruptcy, extremely explicit</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-container" id="chatContainer"></div>
+
+    <div class="input-container">
+        <div class="input-wrapper">
+            <input type="text" id="userInput" placeholder="Say something to Gork... or just watch him ramble..." onkeypress="handleKeyPress(event)">
+            <button id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script src="gork.js"></script>
+</body>
+</html>
+
+<!-- 
+============================================
+BACKEND SERVER CODE (server.js)
+============================================
+Save this as server.js in the same folder:
+
+const express = require('express');
+const cors = require('cors');
+const Anthropic = require('@anthropic-ai/sdk');
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// IMPORTANT: Add your Anthropic API key here or use environment variable
+const anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY || 'YOUR_API_KEY_HERE'
+});
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static('.')); // Serve HTML files
+
+app.post('/api/generate', async (req, res) => {
+    try {
+        const { prompt } = req.body;
+
+        const message = await anthropic.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1000,
+            messages: [{ role: 'user', content: prompt }]
+        });
+
+        res.json({ text: message.content[0].text });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Failed to generate response' });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`🚀 Gork server running on http://localhost:${PORT}`);
+});
+
+============================================
+PACKAGE.JSON
+============================================
+Save this as package.json:
+
+{
+  "name": "gork-ai",
+  "version": "1.0.0",
+  "description": "Unhinged AI Chat",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}
+
+============================================
+DEPLOYMENT INSTRUCTIONS
+============================================
+
+LOCAL SETUP:
+1. Create a folder and put these 3 files in it:
+   - index.html (this file)
+   - gork.js (code below)
+   - server.js (code above)
+   - package.json (code above)
+
+2. Get an Anthropic API key from: https://console.anthropic.com/
+
+3. Install dependencies:
+   npm install
+
+4. Add your API key to server.js or set environment variable:
+   export ANTHROPIC_API_KEY=your_key_here
+
+5. Start the server:
+   npm start
+
+6. Open http://localhost:3000 in your browser
+
+DEPLOY TO CLOUD:
+- Vercel: Connect GitHub repo, add API key in environment variables
+- Heroku: git push heroku main, set ANTHROPIC_API_KEY config var
+- Railway: Connect repo, add ANTHROPIC_API_KEY environment variable
+- Netlify: Use Netlify Functions for the backend
+
+-->
