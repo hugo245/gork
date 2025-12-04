@@ -30,7 +30,10 @@ if (GROQ_API_KEY === 'YOUR_GROQ_KEY_HERE') {
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('.'));
+
+// Create router for /gork subpath
+const gorkRouter = express.Router();
+gorkRouter.use(express.static('.'));
 
 // Helper functions
 function getUsers() {
@@ -52,7 +55,7 @@ function findUser(username) {
 // ============================================
 
 // Register new user
-app.post('/api/auth/register', (req, res) => {
+gorkRouter.post('/api/auth/register', (req, res) => {
     try {
         const { username } = req.body;
 
@@ -93,7 +96,7 @@ app.post('/api/auth/register', (req, res) => {
 });
 
 // Check if user is verified
-app.post('/api/auth/check', (req, res) => {
+gorkRouter.post('/api/auth/check', (req, res) => {
     try {
         const { username } = req.body;
         const user = findUser(username);
@@ -116,7 +119,7 @@ app.post('/api/auth/check', (req, res) => {
 // ============================================
 
 // Admin login
-app.post('/api/admin/login', (req, res) => {
+gorkRouter.post('/api/admin/login', (req, res) => {
     const { password } = req.body;
     
     if (password === ADMIN_PASSWORD) {
@@ -127,7 +130,7 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 // Get all users (admin only)
-app.post('/api/admin/users', (req, res) => {
+gorkRouter.post('/api/admin/users', (req, res) => {
     const { password } = req.body;
     
     if (password !== ADMIN_PASSWORD) {
@@ -139,7 +142,7 @@ app.post('/api/admin/users', (req, res) => {
 });
 
 // Verify user (admin only)
-app.post('/api/admin/verify', (req, res) => {
+gorkRouter.post('/api/admin/verify', (req, res) => {
     const { password, userId, verified } = req.body;
     
     if (password !== ADMIN_PASSWORD) {
@@ -162,7 +165,7 @@ app.post('/api/admin/verify', (req, res) => {
 });
 
 // Delete user (admin only)
-app.post('/api/admin/delete', (req, res) => {
+gorkRouter.post('/api/admin/delete', (req, res) => {
     const { password, userId } = req.body;
     
     if (password !== ADMIN_PASSWORD) {
@@ -218,7 +221,7 @@ async function callGroq(prompt) {
     return data.choices[0].message.content;
 }
 
-app.post('/api/generate', async (req, res) => {
+gorkRouter.post('/api/generate', async (req, res) => {
     try {
         const { prompt, username, mode } = req.body;
 
@@ -257,17 +260,20 @@ app.post('/api/generate', async (req, res) => {
     }
 });
 
-app.get('/api/health', (req, res) => {
+gorkRouter.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Gork server with auth is running!' });
 });
+
+// Mount the router at /gork
+app.use('/gork', gorkRouter);
 
 app.listen(PORT, () => {
     console.log('');
     console.log('🚀 ============================================');
     console.log('🚀   GORK SERVER WITH AUTH IS RUNNING!');
     console.log('🚀 ============================================');
-    console.log(`🚀   Local:   http://localhost:${PORT}`);
-    console.log(`🚀   Admin:   http://localhost:${PORT}/admin.html`);
+    console.log(`🚀   Local:   http://localhost:${PORT}/gork`);
+    console.log(`🚀   Admin:   http://localhost:${PORT}/gork/admin.html`);
     console.log('🚀 ============================================');
     console.log(`🔑   Admin Password: ${ADMIN_PASSWORD}`);
     console.log('🔑   Change in server.js or set ADMIN_PASSWORD env var');

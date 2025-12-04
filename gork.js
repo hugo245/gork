@@ -17,13 +17,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     if (!currentUsername) {
         // Redirect to login if no username
-        window.location.href = '/login.html';
+        window.location.href = '/gork/login.html';
         return;
     }
 
     // Check verification status
     try {
-        const response = await fetch(`${API_URL}/api/auth/check`, {
+        const response = await fetch(`${API_URL}/gork/api/auth/check`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username: currentUsername })
@@ -201,7 +201,7 @@ async function generateGorkResponse(userMessage = null) {
     }
 
     try {
-        const response = await fetch(`${API_URL}/api/generate`, {
+        const response = await fetch(`${API_URL}/gork/api/generate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
