@@ -4,6 +4,14 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "**/*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "**/*.js",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -13,17 +21,15 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/gork/(.*)",
-      "destination": "/"
+      "dest": "/gork/$1"
     },
     {
-      "source": "/(.*)",
-      "destination": "/gork/$1"
+      "src": "/gork",
+      "dest": "/gork/index.html"
+    },
+    {
+      "src": "/",
+      "dest": "/gork/index.html"
     }
   ]
 }

@@ -261,16 +261,35 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Gork server with auth is running!' });
 });
 
-app.listen(PORT, () => {
+// ... (keep all your existing code up to the end of routes)
+
+// Fallback for root /
+app.get('/', (req, res) => {
+  res.redirect('/gork');
+});
+
+app.get('/gork', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Export app for Vercel serverless
+module.exports = app;
+
+// Local dev only: Listen on port
+if (require.main === module && !process.env.VERCEL) {
+  app.listen(PORT, () => {
     console.log('');
     console.log('🚀 ============================================');
     console.log('🚀   GORK SERVER WITH AUTH IS RUNNING!');
     console.log('🚀 ============================================');
-    console.log(`🚀   Local:   http://localhost:${PORT}`);
-    console.log(`🚀   Admin:   http://localhost:${PORT}/admin.html`);
+    console.log(`🚀   Local:   http://localhost:${PORT}/gork`);
+    console.log(`🚀   Admin:   http://localhost:${PORT}/gork/admin.html`);
     console.log('🚀 ============================================');
     console.log(`🔑   Admin Password: ${ADMIN_PASSWORD}`);
     console.log('🔑   Change in server.js or set ADMIN_PASSWORD env var');
     console.log('🚀 ============================================');
     console.log('');
-});
+  });
+} else {
+  console.log('🚀 Gork ready for Vercel deployment!');
+}

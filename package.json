@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "description": "Gork - Unhinged AI Chat with FREE API",
   "main": "server.js",
-  "scripts": {
+"scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "build": "echo 'Build complete - no build step needed'"
   },
   "keywords": ["ai", "chat", "free", "groq", "huggingface"],
   "author": "",
