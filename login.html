@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -210,7 +209,7 @@
         </div>
 
         <div class="admin-link">
-            Admin? <a href="/gork/admin.html">Login here</a>
+            Admin? <a href="/admin.html">Login here</a>
         </div>
     </div>
 
@@ -236,7 +235,7 @@
             errorDiv.classList.remove('show');
 
             try {
-                const response = await fetch(`${API_URL}/gork/api/auth/register`, {
+                const response = await fetch(`${API_URL}/api/auth/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username })
@@ -253,7 +252,7 @@
                 localStorage.setItem('gork_user_id', data.user.id);
 
                 // Redirect to main app
-                window.location.href = '/gork/index.html';
+                window.location.href = '/index.html';
 
             } catch (error) {
                 showError(error.message);
@@ -272,7 +271,7 @@
         window.onload = () => {
             const username = localStorage.getItem('gork_username');
             if (username) {
-                window.location.href = '/gork/index.html';
+                window.location.href = '/index.html';
             }
         };
     </script>
