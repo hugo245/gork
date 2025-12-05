@@ -300,7 +300,7 @@
     <script>
 const API_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/gork'  // Local: full path
-    : '';  // Vercel: relative /gork/api/...
+    : '/gork';  // Vercel: relative /gork/api/...
         
         let adminPassword = '';
 

@@ -4,28 +4,16 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "**/*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "**/*.js",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
+      "src": "/gork/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
       "src": "/gork/(.*)",
-      "dest": "/gork/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/gork/$1"
-    },
-    {
-      "src": "/gork",
-      "dest": "/gork/index.html"
+      "dest": "/$1"
     },
     {
       "src": "/",

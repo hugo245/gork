@@ -1,4 +1,4 @@
-// gork.js - Frontend JavaScript
+// gork.js - Frontend JavaScript (FIXED API PATHS)
 let currentMode = 'normal';
 let isTyping = false;
 let spontaneousInterval;
@@ -6,10 +6,10 @@ let pendingMode = null;
 let currentUsername = null;
 let isVerified = false;
 
-// Change this to your deployed backend URL, or leave as localhost for local dev
+// FIXED: API paths now include /gork prefix
 const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000' 
-    : ''; // Will use same domain when deployed
+    ? 'http://localhost:3000/gork'  // Include /gork for local
+    : '/gork';  // Include /gork for deployed
 
 // Check auth on load
 window.addEventListener('DOMContentLoaded', async () => {
@@ -17,7 +17,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     
     if (!currentUsername) {
         // Redirect to login if no username
-        window.location.href = '/login.html';
+        window.location.href = '/gork/login.html';
         return;
     }
 
@@ -275,17 +275,6 @@ function startSpontaneousMessages() {
         }
     }, 10000);
 }
-
-// Initialize
-setTimeout(() => {
-    addMessage('gork', "What's up? I'm Gork and I don't give a fuck about your feelings. Pick a mode and let's get weird.");
-}, 1000);
-
-setTimeout(() => {
-    generateGorkResponse();
-}, 3000);
-
-startSpontaneousMessages();
 
 // Close dropdown when clicking outside
 document.addEventListener('click', function(event) {
