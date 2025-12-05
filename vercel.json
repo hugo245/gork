@@ -9,15 +9,23 @@
   "routes": [
     {
       "src": "/gork/api/(.*)",
-      "dest": "/api/$1"
+      "dest": "/server.js"
+    },
+    {
+      "src": "/gork/(.*\\.(html|js|css|json))",
+      "dest": "/$1"
     },
     {
       "src": "/gork/(.*)",
       "dest": "/$1"
     },
     {
+      "src": "/gork",
+      "dest": "/index.html"
+    },
+    {
       "src": "/",
-      "dest": "/gork/index.html"
+      "dest": "/gork"
     }
   ]
 }

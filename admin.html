@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -187,6 +188,7 @@
             cursor: pointer;
             margin-right: 5px;
             font-size: 13px;
+            width: auto;
         }
 
         .verify-btn {
@@ -232,7 +234,7 @@
     <!-- Login Screen -->
     <div class="login-screen" id="loginScreen">
         <div class="login-box">
-            <div style="font-size: 60px; margin-bottom: 20px;">🔐</div>
+            <div style="font-size: 60px; margin-bottom: 20px;">🔒</div>
             <h1 style="margin-bottom: 10px;">Admin Panel</h1>
             <p style="color: #888; margin-bottom: 30px;">Enter admin password</p>
             
@@ -298,9 +300,10 @@
     </div>
 
     <script>
-const API_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000/gork'  // Local: full path
-    : '/gork';  // Vercel: relative /gork/api/...
+        // FIXED: API URL detection for both localhost and production
+        const API_URL = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000/gork'
+            : '/gork';
         
         let adminPassword = '';
 
@@ -385,7 +388,7 @@ const API_URL = window.location.hostname === 'localhost'
                     tbody.appendChild(row);
                 });
             } catch (error) {
-                showError('Failed to load users');
+                showError('Failed to load users: ' + error.message);
             }
         }
 
